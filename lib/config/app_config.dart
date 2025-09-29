@@ -30,9 +30,4 @@ class AppConfig {
   // UI settings
   static const double cameraPreviewHeight = 200.0;
   static const double sentenceWheelHeight = 100.0;
-
-  // Colors
-  static const primaryColor = 0xFF6A1B9A; // Purple
-  static const backgroundColor = 0xFF0A0A0A; // Dark
-  static const gradientStartColor = 0xFF1A0033; // Dark purple
 }

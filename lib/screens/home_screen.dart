@@ -109,38 +109,36 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        color: Colors.white,
-        child: SafeArea(
-          child: Column(
-            children: [
-              const HeaderWidget(),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: SafeArea(
+        child: Column(
+          children: [
+            const HeaderWidget(),
 
-              const SizedBox(height: 10),
+            const SizedBox(height: 10),
 
-              CameraPreviewWidget(
-                cameraService: _cameraService,
-                isBlinkDetectionEnabled: _isBlinkDetectionEnabled,
+            CameraPreviewWidget(
+              cameraService: _cameraService,
+              isBlinkDetectionEnabled: _isBlinkDetectionEnabled,
+            ),
+
+            ControlButtonWidget(
+              isBlinkDetectionEnabled: _isBlinkDetectionEnabled,
+              onToggle: _toggleBlinkDetection,
+            ),
+
+            const SizedBox(height: 30),
+
+            Expanded(
+              child: SentenceWheelWidget(
+                sentences: _sentences,
+                currentHighlightIndex: _currentHighlightIndex,
+                selectedIndex: _selectedIndex,
               ),
+            ),
 
-              ControlButtonWidget(
-                isBlinkDetectionEnabled: _isBlinkDetectionEnabled,
-                onToggle: _toggleBlinkDetection,
-              ),
-
-              const SizedBox(height: 30),
-
-              Expanded(
-                child: SentenceWheelWidget(
-                  sentences: _sentences,
-                  currentHighlightIndex: _currentHighlightIndex,
-                  selectedIndex: _selectedIndex,
-                ),
-              ),
-
-              StatusWidget(isBlinkDetectionEnabled: _isBlinkDetectionEnabled),
-            ],
-          ),
+            StatusWidget(isBlinkDetectionEnabled: _isBlinkDetectionEnabled),
+          ],
         ),
       ),
     );

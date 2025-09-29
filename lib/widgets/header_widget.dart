@@ -8,14 +8,14 @@ class HeaderWidget extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 10.0),
-      child: const Align(
+      child: Align(
         alignment: Alignment.centerLeft,
         child: Text(
           'EyeVoices',
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: Colors.black,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
       ),

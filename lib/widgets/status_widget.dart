@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../config/theme_extensions.dart';
 
 class StatusWidget extends StatelessWidget {
   final bool isBlinkDetectionEnabled;
@@ -11,10 +12,12 @@ class StatusWidget extends StatelessWidget {
       margin: const EdgeInsets.all(20),
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: Colors.grey.withOpacity(0.1),
+        color: context.statusBackground,
         borderRadius: BorderRadius.circular(15),
         border: Border.all(
-          color: isBlinkDetectionEnabled ? Colors.green : Colors.orange,
+          color: isBlinkDetectionEnabled
+              ? context.successGreen
+              : context.warningOrange,
           width: 1,
         ),
       ),
@@ -23,7 +26,9 @@ class StatusWidget extends StatelessWidget {
         children: [
           Icon(
             isBlinkDetectionEnabled ? Icons.remove_red_eye : Icons.touch_app,
-            color: isBlinkDetectionEnabled ? Colors.green : Colors.orange,
+            color: isBlinkDetectionEnabled
+                ? context.successGreen
+                : context.warningOrange,
             size: 20,
           ),
           const SizedBox(width: 10),
@@ -32,7 +37,9 @@ class StatusWidget extends StatelessWidget {
                 ? 'Blink to speak highlighted sentence'
                 : 'Blink detection disabled',
             style: TextStyle(
-              color: isBlinkDetectionEnabled ? Colors.green : Colors.orange,
+              color: isBlinkDetectionEnabled
+                  ? context.successGreen
+                  : context.warningOrange,
               fontSize: 14,
               fontWeight: FontWeight.w500,
             ),

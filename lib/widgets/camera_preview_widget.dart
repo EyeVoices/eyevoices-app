@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import '../services/camera_service.dart';
+import '../config/theme_extensions.dart';
 
 class CameraPreviewWidget extends StatelessWidget {
   final CameraService cameraService;
@@ -20,10 +21,10 @@ class CameraPreviewWidget extends StatelessWidget {
         height: 120,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: Colors.grey, width: 2),
+          border: Border.all(color: context.previewBorder, width: 2),
         ),
-        child: const Center(
-          child: CircularProgressIndicator(color: Colors.purple),
+        child: Center(
+          child: CircularProgressIndicator(color: context.primaryColor),
         ),
       );
     }
@@ -38,7 +39,9 @@ class CameraPreviewWidget extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(15),
               border: Border.all(
-                color: isBlinkDetectionEnabled ? Colors.green : Colors.orange,
+                color: isBlinkDetectionEnabled
+                    ? context.successGreen
+                    : context.warningOrange,
                 width: 3,
               ),
             ),
@@ -59,10 +62,14 @@ class CameraPreviewWidget extends StatelessWidget {
             ),
           ),
           if (isBlinkDetectionEnabled)
-            const Positioned(
+            Positioned(
               top: 10,
               right: 10,
-              child: Icon(Icons.remove_red_eye, color: Colors.green, size: 30),
+              child: Icon(
+                Icons.remove_red_eye,
+                color: context.successGreen,
+                size: 30,
+              ),
             ),
         ],
       ),

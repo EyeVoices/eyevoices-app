@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../config/theme_extensions.dart';
 
 class SentenceWheelWidget extends StatelessWidget {
   final List<String> sentences;
@@ -25,13 +26,13 @@ class SentenceWheelWidget extends StatelessWidget {
         ),
         itemCount: sentences.length,
         itemBuilder: (context, index) {
-          return _buildSentenceCard(index);
+          return _buildSentenceCard(context, index);
         },
       ),
     );
   }
 
-  Widget _buildSentenceCard(int index) {
+  Widget _buildSentenceCard(BuildContext context, int index) {
     final isHighlighted = index == currentHighlightIndex;
     final isSelected = index == selectedIndex;
 
@@ -41,33 +42,33 @@ class SentenceWheelWidget extends StatelessWidget {
 
     if (isSelected) {
       // Grün für ausgewählt (nach Blink)
-      borderColor = Colors.green;
-      backgroundColor = Colors.green.withOpacity(0.1);
+      borderColor = context.successGreen;
+      backgroundColor = context.successGreen.withOpacity(0.1);
       shadows = [
         BoxShadow(
-          color: Colors.green.withOpacity(0.3),
+          color: context.successGreen.withOpacity(0.3),
           blurRadius: 8,
           spreadRadius: 2,
         ),
       ];
     } else if (isHighlighted) {
       // Blau mit Glow für aktuell fokussiert
-      borderColor = Colors.blue;
-      backgroundColor = Colors.blue.withOpacity(0.05);
+      borderColor = context.focusBlue;
+      backgroundColor = context.focusBlue.withOpacity(0.05);
       shadows = [
         BoxShadow(
-          color: Colors.blue.withOpacity(0.4),
+          color: context.focusBlue.withOpacity(0.4),
           blurRadius: 12,
           spreadRadius: 3,
         ),
       ];
     } else {
       // Grau für normal
-      borderColor = Colors.grey.withOpacity(0.3);
-      backgroundColor = Colors.grey.withOpacity(0.05);
+      borderColor = context.sentenceGray.withOpacity(0.3);
+      backgroundColor = context.sentenceGray.withOpacity(0.05);
       shadows = [
         BoxShadow(
-          color: Colors.grey.withOpacity(0.2),
+          color: context.sentenceGray.withOpacity(0.2),
           blurRadius: 4,
           spreadRadius: 0,
           offset: const Offset(0, 2),
@@ -93,9 +94,9 @@ class SentenceWheelWidget extends StatelessWidget {
           textAlign: TextAlign.center,
           maxLines: 3,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
-            color: Colors.black,
+            color: context.onSurface,
             fontWeight: FontWeight.w500,
             height: 1.3,
           ),

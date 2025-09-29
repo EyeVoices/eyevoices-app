@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../config/theme_extensions.dart';
 
 class ControlButtonWidget extends StatelessWidget {
   final bool isBlinkDetectionEnabled;
@@ -18,9 +19,9 @@ class ControlButtonWidget extends StatelessWidget {
         onPressed: onToggle,
         style: ElevatedButton.styleFrom(
           backgroundColor: isBlinkDetectionEnabled
-              ? Colors.green
-              : Colors.orange,
-          foregroundColor: Colors.white,
+              ? context.successGreen
+              : context.warningOrange,
+          foregroundColor: context.onPrimary,
           padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(25),

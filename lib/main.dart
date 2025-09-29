@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'screens/home_screen.dart';
+import 'config/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,12 +18,9 @@ class EyeVoicesApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'EyeVoices',
-      theme: ThemeData(
-        primarySwatch: Colors.purple,
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0A0A0A),
-        fontFamily: 'Roboto',
-      ),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.light, // Standardmäßig im Light Mode
       home: HomeScreen(cameras: cameras),
       debugShowCheckedModeBanner: false,
     );
