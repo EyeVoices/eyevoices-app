@@ -4,22 +4,25 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
+import '../config/app_config.dart';
+import '../models/blink_pattern.dart';
 
 class CameraService {
   final List<CameraDescription> cameras;
-  final VoidCallback onBlinkDetected;
+  final Function(BlinkPattern) onPatternDetected;
 
   CameraController? _cameraController;
   FaceDetector? _faceDetector;
   bool _isDetecting = false;
 
-  // Blink detection variables
-  bool _isBlinking = false;
-  int _blinkFrameCounter = 0;
-  DateTime? _lastBlinkTime;
+  // Enhanced blink detection variables
+  List<DateTime> _blinkHistory = [];
+  bool _isBothEyesBlinking = false;
+  int _bothEyesBlinkFrames = 0;
+  DateTime? _lastPatternTime;
   static int frameCount = 0;
 
-  CameraService({required this.cameras, required this.onBlinkDetected});
+  CameraService({required this.cameras, required this.onPatternDetected});
 
   bool get isInitialized => _cameraController?.value.isInitialized ?? false;
   CameraController? get cameraController => _cameraController;
@@ -89,7 +92,7 @@ class CameraService {
         if (frameCount % 15 == 0) {
           print('😀 ${faces.length} face(s) detected!');
         }
-        _detectBlink(faces.first);
+        _detectBlinkPatterns(faces.first);
       } else {
         if (frameCount % 30 == 0) {
           print('❌ No faces detected');
@@ -127,39 +130,76 @@ class CameraService {
     );
   }
 
-  void _detectBlink(Face face) {
+  void _detectBlinkPatterns(Face face) {
     final leftEyeProb = face.leftEyeOpenProbability;
     final rightEyeProb = face.rightEyeOpenProbability;
 
     if (leftEyeProb != null && rightEyeProb != null) {
-      double avgEyeOpenness = (leftEyeProb + rightEyeProb) / 2.0;
-
-      if (frameCount % 15 == 0) {
-        print('👁️ Eyes openness: ${avgEyeOpenness.toStringAsFixed(3)}');
-      }
-
-      if (avgEyeOpenness < 0.6) {
-        if (!_isBlinking) {
-          _blinkFrameCounter++;
-          if (_blinkFrameCounter >= 2) {
-            _isBlinking = true;
-            print('💫 Blink STARTED');
-          }
-        }
-      } else if (avgEyeOpenness > 0.7) {
-        if (_isBlinking && _blinkFrameCounter >= 2) {
-          DateTime now = DateTime.now();
-          if (_lastBlinkTime == null ||
-              now.difference(_lastBlinkTime!).inMilliseconds > 1500) {
-            print('🎯 BLINK COMPLETE! Triggering speech...');
-            onBlinkDetected();
-            _lastBlinkTime = now;
-          }
-          _isBlinking = false;
-          _blinkFrameCounter = 0;
-        }
-      }
+      _processBothEyesBlink(leftEyeProb, rightEyeProb);
     }
+  }
+
+  void _processBothEyesBlink(double leftEyeProb, double rightEyeProb) {
+    DateTime now = DateTime.now();
+
+    // Check cooldown period
+    if (_lastPatternTime != null &&
+        now.difference(_lastPatternTime!).inMilliseconds <
+            AppConfig.patternCooldown.inMilliseconds) {
+      return;
+    }
+
+    // Check if both eyes are closed
+    double avgEyeOpenness = (leftEyeProb + rightEyeProb) / 2.0;
+    bool bothEyesClosed = avgEyeOpenness < AppConfig.bothEyesClosedThreshold;
+
+    if (frameCount % 15 == 0) {
+      print('👁️ Both eyes openness: ${avgEyeOpenness.toStringAsFixed(3)}');
+    }
+
+    if (bothEyesClosed) {
+      if (!_isBothEyesBlinking) {
+        _bothEyesBlinkFrames++;
+        if (_bothEyesBlinkFrames >= AppConfig.blinkFramesRequired) {
+          _isBothEyesBlinking = true;
+          print('💫 Both eyes blink STARTED');
+        }
+      }
+    } else if (_isBothEyesBlinking) {
+      if (_bothEyesBlinkFrames >= AppConfig.blinkFramesRequired) {
+        print('🎯 Both eyes blink COMPLETED - checking for double blink...');
+        _checkForDoubleBlink(now);
+      }
+      _isBothEyesBlinking = false;
+      _bothEyesBlinkFrames = 0;
+    }
+  }
+
+  void _checkForDoubleBlink(DateTime now) {
+    // Add current blink timestamp to history
+    _blinkHistory.add(now);
+
+    // Clean old blinks (keep only those within double blink time window)
+    _blinkHistory.removeWhere(
+      (blinkTime) =>
+          now.difference(blinkTime).inMilliseconds >
+          AppConfig.doubleBlinkTimeWindow.inMilliseconds,
+    );
+
+    if (_blinkHistory.length >= 2) {
+      print('🎯🎯 DOUBLE BLINK DETECTED! Triggering action...');
+      _registerPattern(BlinkPattern.doubleBlink, now);
+
+      // Clear blink history after successful double blink
+      _blinkHistory.clear();
+    } else {
+      print('📝 Single blink registered (waiting for potential double blink)');
+    }
+  }
+
+  void _registerPattern(BlinkPattern pattern, DateTime now) {
+    _lastPatternTime = now;
+    onPatternDetected(pattern);
   }
 
   void setDetectionEnabled(bool enabled) {
@@ -171,9 +211,10 @@ class CameraService {
       } else {
         // Stop image stream to save resources
         _cameraController!.stopImageStream();
-        _blinkFrameCounter = 0;
-        _isBlinking = false;
+        _bothEyesBlinkFrames = 0;
+        _isBothEyesBlinking = false;
         _isDetecting = false;
+        _blinkHistory.clear();
         print('🚫 Detection DISABLED - Image stream stopped');
       }
     }

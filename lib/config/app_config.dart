@@ -9,6 +9,11 @@ class AppConfig {
   static const double blinkRecoveryThreshold = 0.7;
   static const int blinkFramesRequired = 2;
 
+  // Advanced blink pattern detection settings
+  static const Duration doubleBlinkTimeWindow = Duration(milliseconds: 800);
+  static const Duration patternCooldown = Duration(milliseconds: 2000);
+  static const double bothEyesClosedThreshold = 0.4;
+
   // TTS settings
   static const String ttsLanguage = "en-US";
   static const double ttsPitch = 1.0;

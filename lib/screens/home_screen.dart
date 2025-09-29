@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import '../services/tts_service.dart';
 import '../services/camera_service.dart';
+import '../models/blink_pattern.dart';
 import '../widgets/camera_preview_widget.dart';
 import '../widgets/sentence_wheel_widget.dart';
 import '../widgets/header_widget.dart';
@@ -48,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _ttsService = TTSService();
     _cameraService = CameraService(
       cameras: widget.cameras,
-      onBlinkDetected: _onBlinkDetected,
+      onPatternDetected: _onPatternDetected,
     );
 
     _initializeServices();
@@ -70,25 +71,42 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     });
   }
 
-  void _onBlinkDetected() async {
-    if (_isBlinkDetectionEnabled) {
-      String currentSentence = _sentences[_currentHighlightIndex];
-      await _ttsService.speak(currentSentence);
+  void _onPatternDetected(BlinkPattern pattern) async {
+    if (!_isBlinkDetectionEnabled) return;
 
-      // Setze grüne Hervorhebung für ausgewählten Satz
-      setState(() {
-        _selectedIndex = _currentHighlightIndex;
-      });
+    print('🎯 Pattern detected: $pattern');
 
-      // Entferne grüne Hervorhebung nach 2 Sekunden
-      Future.delayed(const Duration(seconds: 2), () {
-        if (mounted) {
-          setState(() {
-            _selectedIndex = null;
-          });
-        }
-      });
+    switch (pattern) {
+      case BlinkPattern.doubleBlink:
+        // For now, only double blink speaks the current sentence
+        await _speakCurrentSentence();
+        break;
+      case BlinkPattern.leftEyeBlink:
+      case BlinkPattern.rightEyeBlink:
+      case BlinkPattern.longBlink:
+        // These patterns are defined but not implemented yet
+        print('Pattern $pattern detected but not implemented yet');
+        break;
     }
+  }
+
+  Future<void> _speakCurrentSentence() async {
+    String currentSentence = _sentences[_currentHighlightIndex];
+    await _ttsService.speak(currentSentence);
+
+    // Setze grüne Hervorhebung für ausgewählten Satz
+    setState(() {
+      _selectedIndex = _currentHighlightIndex;
+    });
+
+    // Entferne grüne Hervorhebung nach 2 Sekunden
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() {
+          _selectedIndex = null;
+        });
+      }
+    });
   }
 
   void _toggleBlinkDetection() {
