@@ -21,7 +21,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late Timer _highlightTimer;
   int _currentHighlightIndex = 0;
-  late PageController _pageController;
+  int? _selectedIndex; // Für grüne Hervorhebung
 
   late TTSService _ttsService;
   late CameraService _cameraService;
@@ -45,8 +45,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _initializeComponents() {
-    _pageController = PageController(viewportFraction: 0.8, initialPage: 0);
-
     _ttsService = TTSService();
     _cameraService = CameraService(
       cameras: widget.cameras,
@@ -69,16 +67,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         _currentHighlightIndex =
             (_currentHighlightIndex + 1) % _sentences.length;
       });
-
-      Future.delayed(const Duration(milliseconds: 100), () {
-        if (mounted && _pageController.hasClients) {
-          _pageController.animateToPage(
-            _currentHighlightIndex,
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeInOut,
-          );
-        }
-      });
     });
   }
 
@@ -86,6 +74,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     if (_isBlinkDetectionEnabled) {
       String currentSentence = _sentences[_currentHighlightIndex];
       await _ttsService.speak(currentSentence);
+
+      // Setze grüne Hervorhebung für ausgewählten Satz
+      setState(() {
+        _selectedIndex = _currentHighlightIndex;
+      });
+
+      // Entferne grüne Hervorhebung nach 2 Sekunden
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) {
+          setState(() {
+            _selectedIndex = null;
+          });
+        }
+      });
     }
   }
 
@@ -98,7 +100,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    _pageController.dispose();
     _highlightTimer.cancel();
     _cameraService.dispose();
     _ttsService.dispose();
@@ -133,12 +134,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 child: SentenceWheelWidget(
                   sentences: _sentences,
                   currentHighlightIndex: _currentHighlightIndex,
-                  pageController: _pageController,
-                  onPageChanged: (index) {
-                    setState(() {
-                      _currentHighlightIndex = index;
-                    });
-                  },
+                  selectedIndex: _selectedIndex,
                 ),
               ),
 
