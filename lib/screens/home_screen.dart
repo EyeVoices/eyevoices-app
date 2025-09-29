@@ -21,8 +21,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late Timer _highlightTimer;
   int _currentHighlightIndex = 0;
-  late AnimationController _glowController;
-  late Animation<double> _glowAnimation;
   late PageController _pageController;
 
   late TTSService _ttsService;
@@ -55,20 +53,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       onBlinkDetected: _onBlinkDetected,
     );
 
-    _initializeAnimation();
     _initializeServices();
     _startHighlightTimer();
-  }
-
-  void _initializeAnimation() {
-    _glowController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
-      vsync: this,
-    );
-    _glowAnimation = Tween<double>(begin: 0.3, end: 1.0).animate(
-      CurvedAnimation(parent: _glowController, curve: Curves.easeInOut),
-    );
-    _glowController.repeat(reverse: true);
   }
 
   Future<void> _initializeServices() async {
@@ -114,7 +100,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void dispose() {
     _pageController.dispose();
     _highlightTimer.cancel();
-    _glowController.dispose();
     _cameraService.dispose();
     _ttsService.dispose();
     super.dispose();
@@ -124,17 +109,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFF1A0033), Color(0xFF0A0A0A)],
-          ),
-        ),
+        color: Colors.white,
         child: SafeArea(
           child: Column(
             children: [
-              HeaderWidget(glowAnimation: _glowAnimation),
+              const HeaderWidget(),
+
+              const SizedBox(height: 10),
 
               CameraPreviewWidget(
                 cameraService: _cameraService,

@@ -16,8 +16,8 @@ class CameraPreviewWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!cameraService.isInitialized) {
       return Container(
-        margin: const EdgeInsets.all(20),
-        height: 200,
+        margin: const EdgeInsets.symmetric(horizontal: 20),
+        height: 120,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(15),
           border: Border.all(color: Colors.grey, width: 2),
@@ -29,11 +29,12 @@ class CameraPreviewWidget extends StatelessWidget {
     }
 
     return Container(
-      margin: const EdgeInsets.all(20),
+      margin: const EdgeInsets.symmetric(horizontal: 20),
       child: Stack(
         children: [
           Container(
-            height: 200,
+            height: 120,
+            width: double.infinity,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(15),
               border: Border.all(
@@ -43,7 +44,18 @@ class CameraPreviewWidget extends StatelessWidget {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(15),
-              child: CameraPreview(cameraService.cameraController!),
+              child: SizedBox(
+                width: double.infinity,
+                height: 120,
+                child: FittedBox(
+                  fit: BoxFit.cover,
+                  child: SizedBox(
+                    width: 120,
+                    height: 120,
+                    child: CameraPreview(cameraService.cameraController!),
+                  ),
+                ),
+              ),
             ),
           ),
           if (isBlinkDetectionEnabled)

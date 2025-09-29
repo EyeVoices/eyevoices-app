@@ -20,9 +20,9 @@ class SentenceWheelWidget extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.3),
+        color: Colors.grey.withOpacity(0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.purple.withOpacity(0.3), width: 1),
+        border: Border.all(color: Colors.grey.withOpacity(0.3), width: 1),
       ),
       child: Column(
         children: [
@@ -31,7 +31,7 @@ class SentenceWheelWidget extends StatelessWidget {
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: Colors.black,
             ),
           ),
           const SizedBox(height: 20),
@@ -74,8 +74,8 @@ class SentenceWheelWidget extends StatelessWidget {
               )
             : LinearGradient(
                 colors: [
-                  Colors.white.withOpacity(0.08),
-                  Colors.white.withOpacity(0.03),
+                  Colors.grey.withOpacity(0.08),
+                  Colors.grey.withOpacity(0.03),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -98,7 +98,7 @@ class SentenceWheelWidget extends StatelessWidget {
               ]
             : [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.grey.withOpacity(0.2),
                   blurRadius: 8,
                   spreadRadius: 0,
                   offset: const Offset(0, 2),
@@ -137,7 +137,7 @@ class SentenceWheelWidget extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: isHighlighted ? 13 : 10,
-              color: isHighlighted ? Colors.white : Colors.grey[400],
+              color: isHighlighted ? Colors.white : Colors.grey[600],
               fontWeight: isHighlighted ? FontWeight.w600 : FontWeight.normal,
               height: 1.2,
             ),

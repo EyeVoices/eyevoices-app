@@ -11,7 +11,7 @@ class StatusWidget extends StatelessWidget {
       margin: const EdgeInsets.all(20),
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.3),
+        color: Colors.grey.withOpacity(0.1),
         borderRadius: BorderRadius.circular(15),
         border: Border.all(
           color: isBlinkDetectionEnabled ? Colors.green : Colors.orange,
