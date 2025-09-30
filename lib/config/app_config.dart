@@ -14,6 +14,12 @@ class AppConfig {
   static const Duration patternCooldown = Duration(milliseconds: 2000);
   static const double bothEyesClosedThreshold = 0.4;
 
+  // Single eye blink detection settings
+  static const double singleEyeClosedThreshold = 0.4;
+  static const double otherEyeOpenThreshold =
+      0.7; // Other eye must be clearly open
+  static const int singleEyeBlinkFramesRequired = 2;
+
   // TTS settings
   static const String ttsLanguage = "en-US";
   static const double ttsPitch = 1.0;

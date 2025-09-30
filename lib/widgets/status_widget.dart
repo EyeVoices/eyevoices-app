@@ -3,11 +3,25 @@ import '../config/theme_extensions.dart';
 
 class StatusWidget extends StatelessWidget {
   final bool isBlinkDetectionEnabled;
+  final bool isAutoPlayEnabled;
 
-  const StatusWidget({super.key, required this.isBlinkDetectionEnabled});
+  const StatusWidget({
+    super.key,
+    required this.isBlinkDetectionEnabled,
+    this.isAutoPlayEnabled = true,
+  });
 
   @override
   Widget build(BuildContext context) {
+    String statusText;
+    if (!isBlinkDetectionEnabled) {
+      statusText = 'Blink detection disabled';
+    } else if (isAutoPlayEnabled) {
+      statusText = 'Double-blink to speak • Auto-play: ON';
+    } else {
+      statusText = 'Left/Right eye: navigate • Double-blink: speak';
+    }
+
     return Container(
       margin: const EdgeInsets.all(20),
       padding: const EdgeInsets.all(15),
@@ -32,16 +46,17 @@ class StatusWidget extends StatelessWidget {
             size: 20,
           ),
           const SizedBox(width: 10),
-          Text(
-            isBlinkDetectionEnabled
-                ? 'Blink to speak highlighted sentence'
-                : 'Blink detection disabled',
-            style: TextStyle(
-              color: isBlinkDetectionEnabled
-                  ? context.successGreen
-                  : context.warningOrange,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
+          Flexible(
+            child: Text(
+              statusText,
+              style: TextStyle(
+                color: isBlinkDetectionEnabled
+                    ? context.successGreen
+                    : context.warningOrange,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
             ),
           ),
         ],

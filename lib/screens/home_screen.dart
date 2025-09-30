@@ -7,7 +7,7 @@ import '../models/blink_pattern.dart';
 import '../widgets/camera_preview_widget.dart';
 import '../widgets/sentence_wheel_widget.dart';
 import '../widgets/header_widget.dart';
-import '../widgets/control_button_widget.dart';
+import '../widgets/dual_control_buttons_widget.dart';
 import '../widgets/status_widget.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -27,6 +27,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late TTSService _ttsService;
   late CameraService _cameraService;
   bool _isBlinkDetectionEnabled = true;
+  bool _isAutoPlayEnabled = true; // Neuer Auto-Play State
 
   final List<String> _sentences = [
     "Hello, how are you today?",
@@ -64,10 +65,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   void _startHighlightTimer() {
     _highlightTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      setState(() {
-        _currentHighlightIndex =
-            (_currentHighlightIndex + 1) % _sentences.length;
-      });
+      if (_isAutoPlayEnabled) {
+        setState(() {
+          _currentHighlightIndex =
+              (_currentHighlightIndex + 1) % _sentences.length;
+        });
+      }
     });
   }
 
@@ -78,16 +81,40 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     switch (pattern) {
       case BlinkPattern.doubleBlink:
-        // For now, only double blink speaks the current sentence
+        // Double blink always speaks the current sentence
         await _speakCurrentSentence();
         break;
       case BlinkPattern.leftEyeBlink:
+        // Left eye blink only navigates when auto-play is disabled
+        if (!_isAutoPlayEnabled) {
+          _moveToPreviousSentence();
+        }
+        break;
       case BlinkPattern.rightEyeBlink:
+        // Right eye blink only navigates when auto-play is disabled
+        if (!_isAutoPlayEnabled) {
+          _moveToNextSentence();
+        }
+        break;
       case BlinkPattern.longBlink:
-        // These patterns are defined but not implemented yet
+        // Long blink is defined but not implemented yet
         print('Pattern $pattern detected but not implemented yet');
         break;
     }
+  }
+
+  void _moveToNextSentence() {
+    setState(() {
+      _currentHighlightIndex = (_currentHighlightIndex + 1) % _sentences.length;
+    });
+  }
+
+  void _moveToPreviousSentence() {
+    setState(() {
+      _currentHighlightIndex = _currentHighlightIndex > 0
+          ? _currentHighlightIndex - 1
+          : _sentences.length - 1;
+    });
   }
 
   Future<void> _speakCurrentSentence() async {
@@ -116,6 +143,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     });
   }
 
+  void _toggleAutoPlay() {
+    setState(() {
+      _isAutoPlayEnabled = !_isAutoPlayEnabled;
+    });
+  }
+
   @override
   void dispose() {
     _highlightTimer.cancel();
@@ -140,9 +173,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               isBlinkDetectionEnabled: _isBlinkDetectionEnabled,
             ),
 
-            ControlButtonWidget(
+            DualControlButtonsWidget(
               isBlinkDetectionEnabled: _isBlinkDetectionEnabled,
-              onToggle: _toggleBlinkDetection,
+              isAutoPlayEnabled: _isAutoPlayEnabled,
+              onToggleBlinkDetection: _toggleBlinkDetection,
+              onToggleAutoPlay: _toggleAutoPlay,
             ),
 
             const SizedBox(height: 30),
@@ -155,7 +190,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
             ),
 
-            StatusWidget(isBlinkDetectionEnabled: _isBlinkDetectionEnabled),
+            StatusWidget(
+              isBlinkDetectionEnabled: _isBlinkDetectionEnabled,
+              isAutoPlayEnabled: _isAutoPlayEnabled,
+            ),
           ],
         ),
       ),

@@ -19,6 +19,13 @@ class CameraService {
   List<DateTime> _blinkHistory = [];
   bool _isBothEyesBlinking = false;
   int _bothEyesBlinkFrames = 0;
+
+  // Single eye blink detection variables
+  bool _isLeftEyeBlinking = false;
+  bool _isRightEyeBlinking = false;
+  int _leftEyeBlinkFrames = 0;
+  int _rightEyeBlinkFrames = 0;
+
   DateTime? _lastPatternTime;
   static int frameCount = 0;
 
@@ -135,20 +142,79 @@ class CameraService {
     final rightEyeProb = face.rightEyeOpenProbability;
 
     if (leftEyeProb != null && rightEyeProb != null) {
-      _processBothEyesBlink(leftEyeProb, rightEyeProb);
+      DateTime now = DateTime.now();
+
+      // Check cooldown period
+      if (_lastPatternTime != null &&
+          now.difference(_lastPatternTime!).inMilliseconds <
+              AppConfig.patternCooldown.inMilliseconds) {
+        return;
+      }
+
+      // Process single eye blinks first (higher priority)
+      _processSingleEyeBlinks(leftEyeProb, rightEyeProb, now);
+
+      // Process both eyes blink for double blink detection
+      _processBothEyesBlink(leftEyeProb, rightEyeProb, now);
     }
   }
 
-  void _processBothEyesBlink(double leftEyeProb, double rightEyeProb) {
-    DateTime now = DateTime.now();
+  void _processSingleEyeBlinks(
+    double leftEyeProb,
+    double rightEyeProb,
+    DateTime now,
+  ) {
+    bool leftClosed = leftEyeProb < AppConfig.singleEyeClosedThreshold;
+    bool rightClosed = rightEyeProb < AppConfig.singleEyeClosedThreshold;
+    bool leftOpen = leftEyeProb > AppConfig.otherEyeOpenThreshold;
+    bool rightOpen = rightEyeProb > AppConfig.otherEyeOpenThreshold;
 
-    // Check cooldown period
-    if (_lastPatternTime != null &&
-        now.difference(_lastPatternTime!).inMilliseconds <
-            AppConfig.patternCooldown.inMilliseconds) {
-      return;
+    // Left eye only blink detection
+    if (leftClosed && rightOpen) {
+      if (!_isLeftEyeBlinking) {
+        _leftEyeBlinkFrames++;
+        if (_leftEyeBlinkFrames >= AppConfig.singleEyeBlinkFramesRequired) {
+          _isLeftEyeBlinking = true;
+          if (frameCount % 10 == 0) {
+            print('👁️‍🗨️ Left eye blink STARTED');
+          }
+        }
+      }
+    } else if (!leftClosed && _isLeftEyeBlinking) {
+      if (_leftEyeBlinkFrames >= AppConfig.singleEyeBlinkFramesRequired) {
+        print('🎯 LEFT EYE BLINK detected!');
+        _registerPattern(BlinkPattern.leftEyeBlink, now);
+      }
+      _isLeftEyeBlinking = false;
+      _leftEyeBlinkFrames = 0;
     }
 
+    // Right eye only blink detection
+    if (rightClosed && leftOpen) {
+      if (!_isRightEyeBlinking) {
+        _rightEyeBlinkFrames++;
+        if (_rightEyeBlinkFrames >= AppConfig.singleEyeBlinkFramesRequired) {
+          _isRightEyeBlinking = true;
+          if (frameCount % 10 == 0) {
+            print('👁️‍🗨️ Right eye blink STARTED');
+          }
+        }
+      }
+    } else if (!rightClosed && _isRightEyeBlinking) {
+      if (_rightEyeBlinkFrames >= AppConfig.singleEyeBlinkFramesRequired) {
+        print('🎯 RIGHT EYE BLINK detected!');
+        _registerPattern(BlinkPattern.rightEyeBlink, now);
+      }
+      _isRightEyeBlinking = false;
+      _rightEyeBlinkFrames = 0;
+    }
+  }
+
+  void _processBothEyesBlink(
+    double leftEyeProb,
+    double rightEyeProb,
+    DateTime now,
+  ) {
     // Check if both eyes are closed
     double avgEyeOpenness = (leftEyeProb + rightEyeProb) / 2.0;
     bool bothEyesClosed = avgEyeOpenness < AppConfig.bothEyesClosedThreshold;
@@ -213,6 +279,10 @@ class CameraService {
         _cameraController!.stopImageStream();
         _bothEyesBlinkFrames = 0;
         _isBothEyesBlinking = false;
+        _isLeftEyeBlinking = false;
+        _isRightEyeBlinking = false;
+        _leftEyeBlinkFrames = 0;
+        _rightEyeBlinkFrames = 0;
         _isDetecting = false;
         _blinkHistory.clear();
         print('🚫 Detection DISABLED - Image stream stopped');
